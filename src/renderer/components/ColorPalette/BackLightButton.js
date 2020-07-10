@@ -86,8 +86,8 @@ function BackLightButton(props) {
   const minWhiteColorValue = 140;
   const isWhiteColor =
     colorFocusButton.r >= minWhiteColorValue &&
-    (colorFocusButton.g >= minWhiteColorValue &&
-      colorFocusButton.b >= minWhiteColorValue);
+    colorFocusButton.g >= minWhiteColorValue &&
+    colorFocusButton.b >= minWhiteColorValue;
   const style = {
     background: `rgb(${colorFocusButton.r}, ${colorFocusButton.g}, ${
       colorFocusButton.b

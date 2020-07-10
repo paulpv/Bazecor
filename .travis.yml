@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - 10
+  - 12
 os:
   - linux
   - osx
@@ -15,7 +15,7 @@ matrix:
     - os: windows
 env:
   - YARN_GPG=no
-if: branch = master OR tag IS present
+if: branch = development OR branch = master OR tag IS present
 dist: xenial
 addons:
   apt:
@@ -26,3 +26,6 @@ install:
   - yarn install --network-timeout 1000000
 script:
   - yarn run build:$TRAVIS_OS_NAME
+after_script:
+  - yarn add --dev aws-sdk
+  - tools/s3-upload.js

@@ -40,8 +40,8 @@ import withStyles from "@material-ui/core/styles/withStyles";
 
 import { withSnackbar } from "notistack";
 
-import Focus from "@bazecor-api/focus";
-import Hardware from "@bazecor-api/hardware";
+import Focus from "../../api/focus";
+import Hardware from "../../api/hardware";
 
 import usb from "usb";
 
@@ -152,7 +152,10 @@ class KeyboardSelect extends React.Component {
         .then(async devices => {
           let supported_devices = [];
           for (const device of devices) {
-            if (await focus.isDeviceSupported(device)) {
+            device.accessible = await focus.isDeviceAccessible(device);
+            if (device.accessible && (await focus.isDeviceSupported(device))) {
+              supported_devices.push(device);
+            } else if (!device.accessible) {
               supported_devices.push(device);
             }
           }
@@ -194,9 +197,9 @@ class KeyboardSelect extends React.Component {
       if (!focus._port) return;
 
       for (let device of this.state.devices) {
-        if (!device.comName) continue;
+        if (!device.path) continue;
 
-        if (device.comName == focus._port.path) {
+        if (device.path == focus._port.path) {
           this.setState(state => ({
             selectedPortIndex: state.devices.indexOf(device)
           }));
@@ -245,12 +248,12 @@ class KeyboardSelect extends React.Component {
     let port = null;
     if (devices && devices.length > 0) {
       deviceItems = devices.map((option, index) => {
-        let label = option.comName;
+        let label = option.path;
         if (option.device && option.device.info) {
           label = (
             <ListItemText
               primary={option.device.info.displayName}
-              secondary={option.comName || i18n.keyboardSelect.unknown}
+              secondary={option.path || i18n.keyboardSelect.unknown}
             />
           );
         } else if (option.info) {
@@ -259,7 +262,7 @@ class KeyboardSelect extends React.Component {
 
         const icon = (
           <ListItemIcon>
-            <Avatar className={option.comName && classes.supported}>
+            <Avatar className={option.path && classes.supported}>
               <KeyboardIcon />
             </Avatar>
           </ListItemIcon>
@@ -314,9 +317,17 @@ class KeyboardSelect extends React.Component {
       </Button>
     );
 
-    let connectionButton;
+    let connectionButton, permissionWarning;
     let focus = new Focus();
     const selectedDevice = devices && devices[this.state.selectedPortIndex];
+
+    if (selectedDevice && !selectedDevice.accessible) {
+      permissionWarning = (
+        <Typography variant="body1" color="error" className={classes.error}>
+          {i18n.keyboardSelect.permissionError}
+        </Typography>
+      );
+    }
 
     if (
       focus.device &&
@@ -340,6 +351,7 @@ class KeyboardSelect extends React.Component {
       connectionButton = (
         <Button
           disabled={
+            (selectedDevice ? !selectedDevice.accessible : false) ||
             this.state.opening ||
             (this.state.devices && this.state.devices.length == 0)
           }
@@ -375,6 +387,7 @@ class KeyboardSelect extends React.Component {
           <CardContent className={classes.content}>
             {preview}
             {port}
+            {permissionWarning}
           </CardContent>
           <Divider variant="middle" />
           <CardActions className={classes.cardActions}>

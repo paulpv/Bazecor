@@ -86,8 +86,8 @@ function UnderglowButton(props) {
   const minWhiteColorValue = 140;
   const isWhiteColor =
     colorFocusButton.r >= minWhiteColorValue &&
-    (colorFocusButton.g >= minWhiteColorValue &&
-      colorFocusButton.b >= minWhiteColorValue);
+    colorFocusButton.g >= minWhiteColorValue &&
+    colorFocusButton.b >= minWhiteColorValue;
   const style = {
     background: palette[indexFocusButton] && palette[indexFocusButton].rgb,
     color: !isWhiteColor ? "white" : "black"

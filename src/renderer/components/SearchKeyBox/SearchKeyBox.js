@@ -24,7 +24,7 @@ import KeyboardIcon from "@material-ui/icons/Keyboard";
 import CloseIcon from "@material-ui/icons/Close";
 import Modal from "@material-ui/core/Modal";
 
-import { KeymapDB } from "@bazecor-api/keymap";
+import { KeymapDB } from "../../../api/keymap";
 import GroupItem from "./GroupItem";
 
 const styles = theme => ({
@@ -84,7 +84,7 @@ const orderArray = [
   { group: "Numpad", isUnite: false, displayName: "Number pad" },
   { group: "Modifiers", isUnite: false, displayName: "Modifiers" },
   { group: "Shift to layer", isUnite: false, displayName: "Shift to layer" },
-  { group: "Lock layer to", isUnite: false, displayName: "Lock layer" },
+  { group: "Move to layer", isUnite: false, displayName: "Move to layer" },
   { group: "Media", isUnite: false, displayName: "Media" },
   { group: "Miscellaneous", isUnite: false, displayName: "Miscellaneous" },
   {

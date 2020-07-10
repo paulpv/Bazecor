@@ -17,7 +17,7 @@
 
 import React from "react";
 
-import Focus from "@bazecor-api/focus";
+import Focus from "../../api/focus";
 
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
@@ -64,7 +64,7 @@ class Welcome extends React.Component {
   reconnect = async () => {
     let focus = new Focus();
     const device = {
-      comName: focus._port.path,
+      path: focus._port.path,
       device: focus.device
     };
 

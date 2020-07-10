@@ -22,8 +22,8 @@ import path from "path";
 import fs from "fs";
 import { version } from "../../../package.json";
 
-import Focus from "@bazecor-api/focus";
-import FlashRaise from "@bazecor-api/flash/lib/bazecor-flash-raise";
+import Focus from "../../api/focus";
+import FlashRaise from "../../api/flash";
 
 import BuildIcon from "@material-ui/icons/Build";
 import Button from "@material-ui/core/Button";
@@ -134,9 +134,9 @@ class FirmwareUpdate extends React.Component {
         }
       ]
     });
-    if (files) {
-      this.setState({ firmwareFilename: files[0] });
-    }
+    files.then(result => {
+      this.setState({ firmwareFilename: result.filePaths[0] });
+    });
   };
 
   _defaultFirmwareFilename = () => {
@@ -171,14 +171,18 @@ class FirmwareUpdate extends React.Component {
           ? clearInterval(count)
           : this.setState({ countdown: countdown - 1 });
       }, 1000);
-      await delay(500);
-      if (this.props.device.device.usb.productId == 0x2201) {
+      await delay(3000);
+      if (!focus.device.bootloader) {
         await this.fleshRaise.resetKeyboard(focus._port);
       }
       this.setState({ countdown: "" });
     }
 
     try {
+      if (focus.device.bootloader) {
+        this.fleshRaise.currentPort = this.props.device;
+      }
+      await focus.close();
       return await this.state.device.device.flash(
         focus._port,
         filename,
@@ -248,10 +252,11 @@ class FirmwareUpdate extends React.Component {
   };
 
   uploadRaise = async () => {
+    let focus = new Focus();
     this.setState({ confirmationOpen: true, isBeginUpdate: true });
     try {
       this.fleshRaise = new FlashRaise(this.props.device);
-      if (this.props.device.device.usb.productId == 0x2201) {
+      if (!focus.device.bootloader) {
         await this.fleshRaise.backupSettings();
       }
       this.setState({ countdown: 3 });
@@ -370,22 +375,25 @@ class FirmwareUpdate extends React.Component {
       </FormControl>
     );
 
+    const focus = new Focus();
     const dialogChildren = (
       <React.Fragment>
         <div className={classes.paper}>{i18n.hardware.updateInstructions}</div>
-        <Grid container direction="row" justify="center">
-          <Grid item className={classes.grid}>
-            <img
-              src={
-                this.isDevelopment
-                  ? "./press_esc.png"
-                  : path.join(getStaticPath(), "press_esc.png")
-              }
-              className={classes.img}
-              alt="press_esc"
-            />
+        {focus.device && !focus.device.bootloader && (
+          <Grid container direction="row" justify="center">
+            <Grid item className={classes.grid}>
+              <img
+                src={
+                  this.isDevelopment
+                    ? "./press_esc.png"
+                    : path.join(getStaticPath(), "press_esc.png")
+                }
+                className={classes.img}
+                alt="press_esc"
+              />
+            </Grid>
           </Grid>
-        </Grid>
+        )}
       </React.Fragment>
     );
 

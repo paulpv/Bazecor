@@ -19,9 +19,9 @@ import React from "react";
 import { spawn } from "child_process";
 import settings from "electron-settings";
 
-import Focus from "@bazecor-api/focus";
-import "@bazecor-api/keymap";
-import "@bazecor-api/colormap";
+import Focus from "../api/focus";
+import "../api/keymap";
+import "../api/colormap";
 import "typeface-roboto/index.css";
 import "typeface-source-code-pro/index.css";
 import { LocationProvider, Router } from "@reach/router";
@@ -47,6 +47,8 @@ import ConfirmationDialog from "./components/ConfirmationDialog";
 import { history, navigate } from "./routerHistory";
 
 let focus = new Focus();
+focus.debug = true;
+focus.timeout = 15000;
 
 if (settings.get("ui.language")) i18n.setLanguage(settings.get("ui.language"));
 
@@ -132,7 +134,7 @@ class App extends React.Component {
   onKeyboardConnect = async port => {
     focus.close();
 
-    if (!port.comName) {
+    if (!port.path) {
       port.device.device = port.device;
 
       this.setState({
@@ -144,11 +146,22 @@ class App extends React.Component {
       return [];
     }
 
-    console.log("Connecting to", port.comName);
-    await focus.open(port.comName, port.device);
+    console.log("Connecting to", port.path);
+    await focus.open(port.path, port.device);
     if (process.platform == "darwin") {
-      await spawn("stty", ["-f", port.comName, "clocal"]);
+      await spawn("stty", ["-f", port.path, "clocal"]);
     }
+
+    if (focus.device.bootloader) {
+      this.setState({
+        connected: true,
+        pages: {},
+        device: port
+      });
+      await navigate("/welcome");
+      return [];
+    }
+
     console.log("Probing for Focus support...");
     let commands;
     try {
